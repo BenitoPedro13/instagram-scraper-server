@@ -1,7 +1,7 @@
 from flask import jsonify
-from scraper.user_scraper import scrape_user
-from scraper.post_scraper import scrape_post
-from utils.parser import parse_user, parse_post
+from src.scraper.user_scraper import scrape_user
+from src.scraper.post_scraper import scrape_post
+from src.utils.parser import parse_user, parse_post
 
 def setup_routes(app):
     @app.route('/user/<username>')

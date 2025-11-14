@@ -2,7 +2,7 @@ import json
 from urllib.parse import quote
 import httpx
 from typing import Dict
-from utils.parser import parse_post
+from src.utils.parser import parse_post
 
 INSTAGRAM_DOCUMENT_ID = "8845758582119845"
 

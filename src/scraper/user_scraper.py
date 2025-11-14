@@ -1,7 +1,7 @@
 import json
 import httpx
 import jmespath
-from utils.parser import parse_user
+from src.utils.parser import parse_user
 
 client = httpx.Client(
     headers={
@@ -22,4 +22,3 @@ def scrape_user(username: str):
     )
     data = json.loads(result.content)
     return data["data"]["user"]
-
