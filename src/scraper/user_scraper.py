@@ -17,8 +17,37 @@ client = httpx.Client(
 
 def scrape_user(username: str):
     """Scrape Instagram user's data"""
-    result = client.get(
-        f"https://i.instagram.com/api/v1/users/web_profile_info/?username={username}",
-    )
-    data = json.loads(result.content)
-    return data["data"]["user"]
+    url = "https://i.instagram.com/api/v1/users/web_profile_info/"
+    try:
+        result = client.get(url, params={"username": username}, timeout=20.0)
+    except httpx.RequestError as exc:
+        raise RuntimeError(f"Erro de rede ao consultar Instagram: {exc}") from exc
+
+    # Verifica status HTTP primeiro
+    if result.status_code != 200:
+        try:
+            payload = result.json()
+        except Exception:
+            payload = {"body": result.text[:300]}
+        message = payload.get("message") if isinstance(payload, dict) else None
+        raise RuntimeError(f"Instagram retornou HTTP {result.status_code}{': ' + message if message else ''}")
+
+    # Tenta decodificar JSON com segurança
+    try:
+        data = result.json()
+    except json.JSONDecodeError:
+        raise RuntimeError("Resposta do Instagram não é JSON válido.")
+
+    # Tenta extrair usuário dos formatos mais comuns
+    user = None
+    if isinstance(data, dict):
+        if isinstance(data.get("data"), dict) and isinstance(data["data"].get("user"), dict):
+            user = data["data"]["user"]
+        elif isinstance(data.get("user"), dict):
+            user = data["user"]
+
+    if not user:
+        keys = list(data.keys()) if isinstance(data, dict) else type(data).__name__
+        raise RuntimeError(f"Formato inesperado da resposta do Instagram. Chaves: {keys}")
+
+    return user
